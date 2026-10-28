@@ -13,54 +13,57 @@ signature: v1.eyJzdWIiOiI2NTkiLCJhdWQiOiJjaGFsbGVuZ2U6d2hhdC1pdC1zaG93cyIsImlhdC
   import RenderStamp from '#lib/kb/RenderStamp.svelte';
 
   const repo = 'https://github.com/robbsson/mega-s01e03-support-kb/issues';
-  const tickets = { parser: `${repo}/1`, hint: `${repo}/2`, 'one-day': `${repo}/3` };
+  const tickets = {
+    parser: { url: `${repo}/1`, outcome: 'fixed' },
+    hint: { url: `${repo}/2`, outcome: "won't fix" },
+    'one-day': { url: `${repo}/3`, outcome: 'open' },
+  };
 </script>
 
-[#4471](/kb/incidents/4471) is marked known: one bug, one fix queued. The reports in it say
-otherwise. They hold three problems, and the queued parser fix closes only the first one.
+[#4471](/kb/incidents/4471) was marked known: one bug, one fix queued. The reports in it held
+three problems. Engineering closed #4471 on 5 October with two outcomes, and the third problem
+is still open.
 
 <Callout kind="warn">
-Not one issue. Each problem below now has a ticket of its own. Do not close #4471 when the
-parser fix ships: check every ticket first.
+#4471 is closed, but not every report in it is solved. The one-day moves have no fix: keep
+their ticket open and keep sending new one-day reports to it, not to #4471.
 </Callout>
 
-## What #4471 holds
+## What #4471 held
 
 <ProblemTable ticket={4471} {tickets} />
 
-The counts come from the export at render time. A row with no ticket is a problem nobody owns yet.
+The counts are the desk's own, from the export at render time: each report once, under the
+cause its tenant and way in give it. The one-day moves are counted under `parser`, where the
+desk filed them, and have a ticket of their own.
 
-## How to tell them apart
+## The three problems
 
-- **`parser`**: the shared parser reads every date month first. A day-first tenant's
-  date comes out with day and month swapped (7 April becomes 4 July). Every way in: app,
-  email and the booking-v2 form. The queued fix is for this one.
-- **`hint`**: the booking-v3 form prints `MM/DD/YYYY` under its date field. People type what
-  the hint says, and the form reads it the tenant's way, day first. The swap looks the same as
-  `parser`, but it only comes in through the v3 form. The parser fix does not touch it: the
-  form hint has to change.
-- **`one-day`**: no swap at all. The date moves by one day (the invite says Tuesday 12 May, the
-  calendar Monday 11 May),
-  two clients in different time zones get different days for the same meeting, or an invite
-  arrives before the booking was made. That points at time zones, not date order. The desk
-  already noted these reports as one-day moves, and the #4471 page still counts them under
-  `parser`.
+- **`parser`**, fixed. The shared parser read every date month first, so a day-first tenant's
+  date came out with day and month swapped (7 April became 4 July). Engineering shipped
+  `fix(dates): parse dd/mm for eu locales`.
+- **`hint`**, won't fix. The booking-v3 form printed `MM/DD/YYYY` under its date field and read
+  the date day first. Same swap, but only through the v3 form, so the parser fix never touched
+  it. The booking-v3 form is retired, so nothing new comes in this way.
+- **`one-day`**, open. No swap at all: the date moves by one day (the invite says Tuesday 12 May,
+  the calendar Monday 11 May), two clients in different time zones get different days for the
+  same meeting, or an invite arrives before the booking was made. That points at time zones,
+  not date order. Neither outcome covers it.
 
 Which problem a report belongs to depends on its tenant, its way in and what it describes. The
-intake tag does not decide it, because it is a guess from the reporter's browser. The column
-"intake tag differs" shows how often that guess was wrong.
+intake tag does not decide it: it is a guess from the reporter's browser.
 
 ## Why they were merged
 
 All three came in under the same subject lines ("Date is wrong", even "Month and day swapped?"
-on a report where nothing was swapped).
-[Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone, so the
-subject never told them apart. Only the tenant, the way in and the body do.
+on a report where nothing was swapped). [Decision 0001](/kb/decisions/0001-dedupe-by-subject)
+merges on subject alone, so the subject never told them apart. Only the tenant, the way in and
+the body do.
 
 ## Lessons
 
 - A big ticket can hold more than one bug. Before marking it known, group it by what a fix
   would have to change, not by subject.
-- Count each report once: the export repeats rows across pages.
+- Closing the big ticket is not closing its reports. Check each problem against what shipped.
 
 <RenderStamp {signature} />
