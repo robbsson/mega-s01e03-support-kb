@@ -1,0 +1,66 @@
+---
+layout: runbook
+title: '#4471 split · three problems, not one'
+owner: robbsson
+status: open
+reviewed: 2026-10-29
+signature: v1.eyJzdWIiOiI2NTkiLCJhdWQiOiJjaGFsbGVuZ2U6d2hhdC1pdC1zaG93cyIsImlhdCI6MTc5MzIyOTMwMSwiZXhwIjoxNzkzMzE1NzAxfQ.Qk7W0T1YjJkv6x1nPQWQpEKn7DIuA45suM6t3lRKCb0
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/robbsson/mega-s01e03-support-kb/issues';
+  const tickets = { parser: `${repo}/1`, hint: `${repo}/2`, 'one-day': `${repo}/3` };
+</script>
+
+[#4471](/kb/incidents/4471) is marked known: one bug, one fix queued. The reports in it say
+otherwise. They hold three problems, and the queued parser fix closes only the first one.
+
+<Callout kind="warn">
+Not one issue. Each problem below now has a ticket of its own. Do not close #4471 when the
+parser fix ships: check every ticket first.
+</Callout>
+
+## What #4471 holds
+
+<ProblemTable ticket={4471} {tickets} />
+
+The counts come from the export at render time. A row with no ticket is a problem nobody owns yet.
+
+## How to tell them apart
+
+- **`parser`**: the shared parser reads every date month first. A day-first tenant's
+  date comes out with day and month swapped (7 April becomes 4 July). Every way in: app,
+  email and the booking-v2 form. The queued fix is for this one.
+- **`hint`**: the booking-v3 form prints `MM/DD/YYYY` under its date field. People type what
+  the hint says, and the form reads it the tenant's way, day first. The swap looks the same as
+  `parser`, but it only comes in through the v3 form. The parser fix does not touch it: the
+  form hint has to change.
+- **`one-day`**: no swap at all. The date moves by one day (the invite says Tuesday 12 May, the
+  calendar Monday 11 May),
+  two clients in different time zones get different days for the same meeting, or an invite
+  arrives before the booking was made. That points at time zones, not date order. The desk
+  already noted these reports as one-day moves, and the #4471 page still counts them under
+  `parser`.
+
+Which problem a report belongs to depends on its tenant, its way in and what it describes. The
+intake tag does not decide it, because it is a guess from the reporter's browser. The column
+"intake tag differs" shows how often that guess was wrong.
+
+## Why they were merged
+
+All three came in under the same subject lines ("Date is wrong", even "Month and day swapped?"
+on a report where nothing was swapped).
+[Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone, so the
+subject never told them apart. Only the tenant, the way in and the body do.
+
+## Lessons
+
+- A big ticket can hold more than one bug. Before marking it known, group it by what a fix
+  would have to change, not by subject.
+- Count each report once: the export repeats rows across pages.
+
+<RenderStamp {signature} />
